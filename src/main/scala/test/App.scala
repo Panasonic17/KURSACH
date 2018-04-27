@@ -17,7 +17,7 @@ object App {
     val appkey = "9fbd1c4BEa889C66cFf83B042B0fDCed"
     val channel = "air-traffic"
     val lines = ssc.receiverStream(new SatoriReciver(endpoint, appkey, channel))
-    lines.foreachRDD(rdd => EsSpark.saveToEs(rdd.map(row => Traffic.parce1(row)), "test6/test6"))
+    lines.foreachRDD(rdd => EsSpark.saveToEs(rdd.map(row => Traffic.parceTraffic(row)), "test_maping/test6"))
 
     ssc.start()
     try
