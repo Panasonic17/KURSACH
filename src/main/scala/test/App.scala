@@ -15,7 +15,7 @@ import spark.streaming.reciver.SatoriReciver
 object App {
   def main(args: Array[String]): Unit = {
 
-    val sparkConf = new SparkConf().setAppName("NetworkWordCount").setMaster("local[4]") //.set("es.index.auto.create", "true").set("es.port", "9200").set("es.nodes", "172.17.0.2")
+    val sparkConf = new SparkConf().setAppName("NetworkWordCount").setMaster("local[4]")//.set("es.nodes", "35.230.25.238").set("es.nodes.discovery","false") //.set("es.index.auto.create", "true").set("es.port", "9200").
     val ssc = new StreamingContext(sparkConf, Durations.seconds(5))
     val sc = ssc.sparkContext
 
@@ -25,7 +25,6 @@ object App {
     val countryNames = sc.broadcast(broadcastGenerator.getIataCountryName("C:\\WORK_DIR\\Projects\\KURSACH\\Data\\airport-codes.csv"))
 
     val airoportCoordinates: Broadcast[Map[String, Coordinates]] = sc.broadcast(broadcastGenerator.getIataCoorinates("C:\\WORK_DIR\\Projects\\KURSACH\\Data\\airport-codes.csv"))
-
 
     ssc.sparkContext.setLogLevel("ERROR")
 
@@ -39,11 +38,10 @@ object App {
     //calculate distance between plain and airoport
     val plainPositions=pourTraffic.map(traffic=>new PlainPosition(traffic))
     val distanceCalculator=new DistanceToDestinationCalculator
-    distanceCalculator.calculateDistanceToDestinationAiroports(plainPositions,airoportCoordinates)
+//    distanceCalculator.calculateDistanceToDestinationAiroports(plainPositions,airoportCoordinates)
 
     val updated: DStream[Traffic] = pourTraffic.map(trafic => trafic.updateCityAndCountry(cityNames.value, countryNames.value))
-    updated.foreachRDD(rdd => EsSpark.saveToEs(rdd, "test_mapping2/te123"))
-
+    updated.foreachRDD(rdd => EsSpark.saveToEs(rdd, "test_mapping2/te123" ,Map("es.nodes" -> "35.230.25.238","es.nodes.discovery" -> "false","es.nodes.wan.only"->"true")))
     ssc.start()
     try
       ssc.awaitTermination()
