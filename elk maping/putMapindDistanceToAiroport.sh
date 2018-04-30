@@ -1,0 +1,32 @@
+curl -X PUT "http://127.0.0.1:9200/test_mapping3/_mapping/test"  -H 'Content-Type: application/json' -d'
+{
+       "test":{  
+            "properties":{  
+               "destination":{  
+                  "type":"text",
+                  "fields":{  
+                     "keyword":{  
+                        "type":"keyword",
+                        "ignore_above":256
+                     }
+                  }
+               },
+               "distance":{  
+                  "type":"float"
+               },
+               "flight":{  
+                  "type":"text",
+                  "fields":{  
+                     "keyword":{  
+                        "type":"keyword",
+                        "ignore_above":256
+                     }
+                  }
+               },
+                 "time":{  
+                  "type":"date",
+                  "format": "epoch_millis"
+               }
+            }
+         }
+   }'

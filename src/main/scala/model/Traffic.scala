@@ -7,13 +7,13 @@ import spark.BroadcastGenerator
 case class Traffic(origin: String, flight: String, course: Int, aircraft: String, callsign: String, registration: String, lat: Double, speed: Int, altitude: String, destination: String, lon: Double, time: Long, var originCity: String, var destinationCity: String, var originCountry: String, var destinationCountry: String) {
   def this(origin: String, flight: String, course: Int, aircraft: String, callsign: String, registration: String, lat: Double, speed: Int, altitude: String, destination: String, lon: Double, time: Long) = this(origin: String, flight: String, course: Int, aircraft: String, callsign: String, registration: String, lat: Double, speed: Int, altitude: String, destination: String, lon: Double, time: Long, "", "", "", "")
 
-  def updateCityAndCountry(cities: Map[String, String], countries: Map[String, String]): Unit = {
-    originCity=cities(origin)
-    destinationCity=cities(destination)
-    originCountry=countries(origin)
-    destinationCountry=countries(destination)
+  def updateCityAndCountry(cities: Map[String, String], countries: Map[String, String]): Traffic = {
+    originCity=cities.getOrElse(origin,"")
+    destinationCity=cities.getOrElse(destination, "")
+    originCountry=countries.getOrElse(origin,"")
+    destinationCountry=countries.getOrElse(destination, "")
+    this
   }
-
 
 }
 

@@ -2,28 +2,47 @@ package test
 
 import java.util.Random
 
-import model.Traffic
+import model.{Coordinates, PlainPosition, Traffic}
 import org.apache.spark.SparkConf
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.streaming.{Durations, StreamingContext}
 import org.elasticsearch.spark.rdd.EsSpark
+import spark.BroadcastGenerator
+import spark.streaming.distance.DistanceToDestinationCalculator
 import spark.streaming.reciver.SatoriReciver
 
 object App {
   def main(args: Array[String]): Unit = {
-    val sparkConf = new SparkConf().setAppName("NetworkWordCount").setMaster("local[4]") //.set("es.index.auto.create", "true").set("es.port", "9200").set("es.nodes", "172.17.0.2")
-    val ssc = new StreamingContext(sparkConf, Durations.seconds(1))
-    val sc=ssc.sparkContext
 
-    val map: Map[String, String] =Map("GUA"->"Sawa")
-    sc.broadcast(map)
+    val sparkConf = new SparkConf().setAppName("NetworkWordCount").setMaster("local[4]") //.set("es.index.auto.create", "true").set("es.port", "9200").set("es.nodes", "172.17.0.2")
+    val ssc = new StreamingContext(sparkConf, Durations.seconds(5))
+    val sc = ssc.sparkContext
+
+
+    val broadcastGenerator = new BroadcastGenerator
+    val cityNames = sc.broadcast(broadcastGenerator.getIataCityName("C:\\WORK_DIR\\Projects\\KURSACH\\Data\\airport-codes.csv"))
+    val countryNames = sc.broadcast(broadcastGenerator.getIataCountryName("C:\\WORK_DIR\\Projects\\KURSACH\\Data\\airport-codes.csv"))
+
+    val airoportCoordinates: Broadcast[Map[String, Coordinates]] = sc.broadcast(broadcastGenerator.getIataCoorinates("C:\\WORK_DIR\\Projects\\KURSACH\\Data\\airport-codes.csv"))
+
 
     ssc.sparkContext.setLogLevel("ERROR")
+
     val endpoint = "wss://open-data.api.satori.com"
     val appkey = "9fbd1c4BEa889C66cFf83B042B0fDCed"
     val channel = "air-traffic"
+
     val lines = ssc.receiverStream(new SatoriReciver(endpoint, appkey, channel))
-    lines.filter(line=>line.contains("GUA")).map(row=>Traffic.parceTraffic(row)).map(trafic=>{trafic.originCity=map(trafic.origin);trafic}).print()
-//    lines.foreachRDD(rdd => EsSpark.saveToEs(rdd.map(row => Traffic.parceTraffic(row)), "test_maping/test6"))
+    val pourTraffic =lines.map(row => Traffic.parceTraffic(row))
+
+    //calculate distance between plain and airoport
+    val plainPositions=pourTraffic.map(traffic=>new PlainPosition(traffic))
+    val distanceCalculator=new DistanceToDestinationCalculator
+    distanceCalculator.calculateDistanceToDestinationAiroports(plainPositions,airoportCoordinates)
+
+    val updated: DStream[Traffic] = pourTraffic.map(trafic => trafic.updateCityAndCountry(cityNames.value, countryNames.value))
+    updated.foreachRDD(rdd => EsSpark.saveToEs(rdd, "test_mapping2/te123"))
 
     ssc.start()
     try

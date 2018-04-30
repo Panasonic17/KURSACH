@@ -1,4 +1,4 @@
-curl -X PUT "localhost:9200/test_maping" -H 'Content-Type: application/json' -d'
+curl -X PUT "localhost:9200/test_mapping3" -H 'Content-Type: application/json' -d'
 {
     "settings" : {
         "index" : {
