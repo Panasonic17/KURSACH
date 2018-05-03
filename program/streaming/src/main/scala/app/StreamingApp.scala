@@ -26,13 +26,13 @@ object StreamingApp {
 
     AppProperties.cloud=if(args.head.toInt==1) true else false
 
-    val broadcastGenerator = new BroadcastGenerator
-    val cityNames = sc.broadcast(broadcastGenerator.getIataCityName(AppProperties.pathToData))
-    val countryNames = sc.broadcast(broadcastGenerator.getIataCountryName(AppProperties.pathToData))
+//    val broadcastGenerator = new BroadcastGenerator
+//    val cityNames = sc.broadcast(broadcastGenerator.getIataCityName(AppProperties.pathToData))
+//    val countryNames = sc.broadcast(broadcastGenerator.getIataCountryName(AppProperties.pathToData))
+//
+//    val airoportCoordinates: Broadcast[Map[String, Coordinates]] = sc.broadcast(broadcastGenerator.getIataCoorinates(AppProperties.pathToData))
 
-    val airoportCoordinates: Broadcast[Map[String, Coordinates]] = sc.broadcast(broadcastGenerator.getIataCoorinates(AppProperties.pathToData))
-
-    ssc.sparkContext.setLogLevel("ERROR")
+//    ssc.sparkContext.setLogLevel("ERROR")
 
     val endpoint = "wss://open-data.api.satori.com"
     val appkey = "73eF3D8DF0c428eb7a44e6D14EbAAd9a"
@@ -40,21 +40,22 @@ object StreamingApp {
 
     var lines:ReceiverInputDStream[String]=null
 
-    if(AppProperties.cloud)
+//    if(AppProperties.cloud)
     lines = ssc.receiverStream(new SatoriReciver(endpoint, appkey, channel))
-    else
-    lines = ssc.socketTextStream("127.0.0.1",1500)
+//    else
+//    lines = ssc.socketTextStream("127.0.0.1",1500)
 
-    val pourTraffic =lines.map(row => Traffic.parceTraffic(row))
-
-    //calculate distance between plain and airoport
-    val plainPositions=pourTraffic.map(traffic=>new PlainPosition(traffic))
-    val distanceCalculator=new DistanceToDestinationCalculator
-    distanceCalculator.calculateDistanceToDestinationAiroports(plainPositions,airoportCoordinates)
-
-    //send to elk
-    val updated: DStream[Traffic] = pourTraffic.map(trafic => trafic.updateCityAndCountry(cityNames.value, countryNames.value))
-    updated.foreachRDD(rdd => EsSpark.saveToEs(rdd, "test_mapping2/te123" ,Map("es.nodes" -> "127.0.0.1","es.nodes.discovery" -> "false","es.nodes.wan.only"->"true")))
+    lines.print(1)
+//    val pourTraffic =lines.map(row => Traffic.parceTraffic(row))
+//
+//    //calculate distance between plain and airoport
+//    val plainPositions=pourTraffic.map(traffic=>new PlainPosition(traffic))
+//    val distanceCalculator=new DistanceToDestinationCalculator
+//    distanceCalculator.calculateDistanceToDestinationAiroports(plainPositions,airoportCoordinates)
+//
+//    //send to elk
+//    val updated: DStream[Traffic] = pourTraffic.map(trafic => trafic.updateCityAndCountry(cityNames.value, countryNames.value))
+//    updated.foreachRDD(rdd => EsSpark.saveToEs(rdd, "test_mapping2/te123" ,Map("es.nodes" -> "127.0.0.1","es.nodes.discovery" -> "false","es.nodes.wan.only"->"true")))
 
     //send to hive
 

@@ -31,6 +31,15 @@ public class SatoriReciver extends Receiver<String> {
     }
 
     private void receive() {
+        System.out.println("ASDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+        System.out.println("ASDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+        System.out.println("ASDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+        System.out.println("ASDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+        System.out.println("ASDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+        System.out.println("ASDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+        System.out.println("ASDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+        System.out.println("ASDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+
         final RtmClient client = new RtmClientBuilder(endpoint, appkey)
                 .setListener(new RtmClientAdapter() {
                     @Override

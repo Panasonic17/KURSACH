@@ -24,6 +24,17 @@
         <artifactId>satori-sdk-java-gson</artifactId>
         <version>1.0.2</version>
     </dependency>
+        <dependency>
+            <groupId>org.json4s</groupId>
+            <artifactId>json4s-native_2.11</artifactId>
+            <version>3.5.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.json4s</groupId>
+            <artifactId>json4s-jackson_2.11</artifactId>
+            <version>3.5.3</version>
+        </dependency>
 </dependencies>
 
 </project>
